@@ -1,0 +1,14 @@
+{
+  "name": "dropkit",
+  "version": "0.0.1",
+  "description": "A DigitalOcean Javascript Api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Warren Mira warrenmira@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^2.3.11"
+  }
+}
