@@ -21,10 +21,11 @@ Usage:
 ```
 
 API:
-
+```javascript
  do.accounts();
 
  do.domains();
  do.domain(domainName);
  do.domain().delete(domainName);
  do.domain().create({'name' : 'name.com','ip_address' : '127.0.0.1'});
+```
