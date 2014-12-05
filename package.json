@@ -1,7 +1,7 @@
 {
   "name": "dropkit",
   "version": "0.0.1",
-  "description": "A DigitalOcean Javascript Api",
+  "description": "A DigitalOcean Node.js module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,5 +10,6 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^2.3.11"
-  }
+  },
+  "keywords" : ["digital ocean", "digitalocean","digitalocean api"]
 }
