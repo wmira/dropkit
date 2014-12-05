@@ -11,5 +11,9 @@
   "dependencies": {
     "bluebird": "^2.3.11"
   },
-  "keywords" : ["digital ocean", "digitalocean","digitalocean api"]
+  "keywords" : ["digital ocean", "digitalocean","digitalocean api"],
+  "repository" :  {
+    "type" : "git",
+    "url" : "https://github.com/wmira/dropkit.git"
+  }
 }
