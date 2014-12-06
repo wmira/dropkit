@@ -3,6 +3,8 @@ dropkit
 
 dropkit is a node.js module for Digital Ocean's REST API.
 
+[![Build Status](https://travis-ci.org/wmira/dropkit.svg?branch=master)](https://travis-ci.org/wmira/dropkit)
+
 # Usage:
 
  npm install --save dropkit
