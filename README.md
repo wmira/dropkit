@@ -3,7 +3,7 @@ dropkit
 
 dropkit is a node.js module for Digital Ocean's REST API.
 
-Usage:
+# Usage:
 
  npm install --save dropkit
 
@@ -20,7 +20,7 @@ Usage:
  });
 ```
 
-API:
+# API:
 ```javascript
  do.accounts();
 
@@ -29,3 +29,8 @@ API:
  do.domain().delete(domainName);
  do.domain().create({'name' : 'name.com','ip_address' : '127.0.0.1'});
 ```
+
+# Dev
+
+1. npm install
+2. npm test
