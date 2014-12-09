@@ -3,18 +3,17 @@
 "use strict";
 
 
-var Promise = require("bluebird");
+var pms = require("bluebird");
 var https = require("https");
-var util = require("util");
-var dutil = require("./util");
+var util = require("./util");
 //our utils
-var HttpOptionCreator = dutil.HttpOptionCreator;
-var toJSON = dutil.toJSON;
-var objToHttpGetParam = dutil.objToHttpGetParam;
+var HttpOptionCreator = util.HttpOptionCreator;
+var toJSON = util.toJSON;
+var objToHttpGetParam = util.objToHttpGetParam;
 
 var createPromise = function(params,towrite) {
-    console.log(params);
-    return new Promise(function (resolve, reject) {
+
+    return new pms(function (resolve, reject) {
         var req = https.request(params,function(res) {
             res.setEncoding('utf8');
             var buffer = "";
@@ -31,6 +30,7 @@ var createPromise = function(params,towrite) {
             });
 
             res.on('end',function() {
+
                 if ( buffer ) {
                     resolve(toJSON(buffer));
                 } else {
@@ -42,13 +42,13 @@ var createPromise = function(params,towrite) {
         if ( towrite ) {
             req.write(towrite);
         }
-
-        //flush it
-        req.end();
-
         req.on('error', function(e) {
             reject(e);
         });
+        //flush it
+        req.end();
+
+
     });
 };
 
@@ -61,19 +61,12 @@ var createPromise = function(params,towrite) {
  */
 var domain = function(DropKit) {
     this.dropkit = DropKit;
-    return this;
 };
 
 
 
-domain.prototype.create = function(name,ipaddress) {
-    var tosubmit = {
-        "name" : name,
-        "ip_address" : ipaddress
-    };
-
-    return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/domains'}),JSON.stringify(tosubmit));
-
+domain.prototype.create = function(data) {
+    return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/domains'}),JSON.stringify(data));
 };
 
 domain.prototype.delete = function(name) {
@@ -87,8 +80,7 @@ domain.prototype.delete = function(name) {
  * @param domainName
  * @param DropKit
  */
-var record = function(domainName,DropKit) {
-    this.name = domainName;
+var record = function(DropKit) {
     this.dropkit = DropKit;
 };
 
@@ -98,8 +90,8 @@ var record = function(domainName,DropKit) {
  *
  * @param recordData
  */
-record.prototype.create = function(recordData) {
-    return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/domains/' + this.name + '/records'}),JSON.stringify(recordData));
+record.prototype.create = function(domainName,recordData) {
+    return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/domains/' + domainName + '/records'}),JSON.stringify(recordData));
 };
 
 
@@ -109,8 +101,8 @@ record.prototype.create = function(recordData) {
  * @param recordId
  * @param newdata
  */
-record.prototype.update = function(recordId,newdata) {
-    return createPromise(this.dropkit.createOption({ method: 'PUT' , path: '/v2/domains/' + this.name + '/records/' + recordId}),JSON.stringify(newdata));
+record.prototype.update = function(domainName,recordId,newdata) {
+    return createPromise(this.dropkit.createOption({ method: 'PUT' , path: '/v2/domains/' + domainName + '/records/' + recordId}),JSON.stringify(newdata));
 
 };
 
@@ -120,8 +112,8 @@ record.prototype.update = function(recordId,newdata) {
  *
  * @param recordId
  */
-record.prototype.delete = function(recordId) {
-    return createPromise(this.dropkit.createOption({ method: 'DELETE' , path: '/v2/domains/' + this.name + '/records/' + recordId}));
+record.prototype.delete = function(domainName,recordId) {
+    return createPromise(this.dropkit.createOption({ method: 'DELETE' , path: '/v2/domains/' + domainName+ '/records/' + recordId}));
 
 };
 
@@ -182,6 +174,35 @@ var DropKit = function(token) {
     };
     this.createOption = HttpOptionCreator(baseOption);
 
+    /**
+     * https://developers.digitalocean.com/#retrieve-an-existing-domain
+     * https://developers.digitalocean.com/#create-a-new-domain
+     *
+     *
+     * @param domainName
+     * @returns {domain}
+     */
+    this.domain = new domain(this);
+
+
+
+
+    /**
+     * https://developers.digitalocean.com/#domain-records
+     *
+     * @param domainName
+     * @returns {record}
+     */
+    this.record = new record(this);
+
+
+    /**
+     *
+     *
+     * @type {droplet}
+     */
+    this.droplet = new droplet(this);
+
 
 };
 
@@ -223,7 +244,7 @@ DropKit.prototype.actions = function(actionId) {
 DropKit.prototype.domains = function(domainName) {
     var path = "/v2/domains" + (domainName ? ("/" + domainName) : "" );
 
-    return createPromise(this.createOption({ method: 'GET' , path: path}))
+    return createPromise(this.createOption({ method: 'GET' , path: path}));
 
 };
 
@@ -238,34 +259,14 @@ DropKit.prototype.domains = function(domainName) {
  */
 DropKit.prototype.records = function(domainName,recordId) {
     var path = "/v2/domains/" + domainName  + "/records" + ( recordId ? ( "/" + recordId) : "");
-    return createPromise(this.createOption({method: 'GET', path: path}))
+    return createPromise(this.createOption({method: 'GET', path: path}));
 
 };
 
 
 
 
-/**
- * https://developers.digitalocean.com/#retrieve-an-existing-domain
- * https://developers.digitalocean.com/#create-a-new-domain
- *
- *
- * @param domainName
- * @returns {domain}
- */
-DropKit.prototype.domain = function() {
-    return new domain(this);
-};
 
-/**
- * https://developers.digitalocean.com/#domain-records
- *
- * @param domainName
- * @returns {record}
- */
-DropKit.prototype.record = function(domainName) {
-    return new record(domainName,this.dropkit);
-};
 
 /**
  * https://developers.digitalocean.com/#droplets
@@ -277,9 +278,7 @@ DropKit.prototype.droplets = function(id) {
     return createPromise(this.createOption({method: 'GET', path: path}))
 
 };
-DropKit.prototype.droplet = function() {
-    return new droplet(this.dropkit); //FIXME, we should just let this be static
-};
+
 /**
  *
  * https://developers.digitalocean.com/#list-droplet-upgrades
@@ -295,6 +294,6 @@ DropKit.prototype.keys = function(keyIdOrFingerPrint) {
     var path = '/v2/account/keys' + ( keyIdOrFingerPrint ? keyIdOrFingerPrint : '/' + keyIdOrFingerPrint);
     return createPromise(this.dropkit.createOption({ method: 'GET' , path: path}));
 
-}
+};
 
 module.exports = DropKit;
