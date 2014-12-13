@@ -112,3 +112,7 @@ See the DigitalOcean's [V2 Rest API](https://developers.digitalocean.com/#introd
 
 1. npm install
 2. npm test
+
+# TODO
+
+1. Write more tests!
