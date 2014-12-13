@@ -7,7 +7,7 @@ var pms = require("bluebird");
 var https = require("https");
 var util = require("./util");
 //our utils
-var HttpOptionCreator = util.HttpOptionCreator;
+var httpOptionCreator = util.HttpOptionCreator;
 var toJSON = util.toJSON;
 var objToHttpGetParam = util.objToHttpGetParam;
 
@@ -63,8 +63,6 @@ var domain = function(DropKit) {
     this.dropkit = DropKit;
 };
 
-
-
 domain.prototype.create = function(data) {
     return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/domains'}),JSON.stringify(data));
 };
@@ -101,8 +99,8 @@ record.prototype.create = function(domainName,recordData) {
  * @param recordId
  * @param newdata
  */
-record.prototype.update = function(domainName,recordId,newdata) {
-    return createPromise(this.dropkit.createOption({ method: 'PUT' , path: '/v2/domains/' + domainName + '/records/' + recordId}),JSON.stringify(newdata));
+record.prototype.update = function(domainName,recordId,name) {
+    return createPromise(this.dropkit.createOption({ method: 'PUT' , path: '/v2/domains/' + domainName + '/records/' + recordId}),JSON.stringify({name: name}));
 
 };
 
@@ -114,7 +112,6 @@ record.prototype.update = function(domainName,recordId,newdata) {
  */
 record.prototype.delete = function(domainName,recordId) {
     return createPromise(this.dropkit.createOption({ method: 'DELETE' , path: '/v2/domains/' + domainName+ '/records/' + recordId}));
-
 };
 
 /**
@@ -156,6 +153,126 @@ droplet.prototype.action = function(dropletId,action) {
     return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/droplets/' + dropletId}),JSON.stringify({type: action}));
 };
 
+
+/**
+ * Image https://developers.digitalocean.com/#images
+ *
+ * @param DropKit
+ * @returns {image}
+ */
+var image = function(DropKit) {
+    this.dropkit = DropKit;
+    return this;
+};
+
+
+/**
+ * Update the name of a droplet
+ * https://developers.digitalocean.com/#update-an-image
+ *
+ */
+image.prototype.update = function(imageId,newName) {
+    return createPromise(this.dropkit.createOption({ method: 'PUT' , path: '/v2/images/' + imageId }),JSON.stringify({name: newName}));
+};
+
+/**
+ * Who would do such
+ * https://developers.digitalocean.com/#delete-an-image
+ *
+ * @param imageId
+ */
+image.prototype.delete   = function(imageId) {
+    return createPromise(this.dropkit.createOption({ method: 'DELETE' , path: '/v2/images/' + imageId }));
+};
+
+/**
+ * https://developers.digitalocean.com/#transfer-an-image
+ *
+ * @param imageId
+ * @param type
+ * @param region
+ */
+image.prototype.transfer   = function(imageId,region) {
+    return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/images/' + imageId + "/actions" }),JSON.stringify({type: "transfer",region: region}));
+};
+
+image.prototype.action   = function(imageId,imageActionId) {
+    return createPromise(this.dropkit.createOption({ method: 'GET' , path: '/v2/images/' + imageId + "/actions/" +imageActionId}));
+};
+
+var key = function(DropKit) {
+    this.dropkit = DropKit;
+    return this;
+};
+
+/**
+ * Update the name of a key
+ * https://developers.digitalocean.com/#update-a-key
+ *
+ * @param keyIdOrFingerPrint
+ * @param name
+ */
+key.prototype.update  = function(keyIdOrFingerPrint,name) {
+    return createPromise(this.dropkit.createOption({method: "PUT", path: "/v2/account/keys/" + keyIdOrFingerPrint}), JSON.stringify({name: name}));
+};
+
+/**
+ *
+ * https://developers.digitalocean.com/#destroy-a-key
+ *
+ * @param keyIdOrFingerPrint
+ */
+key.prototype.destroy  = function(keyIdOrFingerPrint) {
+    return createPromise(this.dropkit.createOption({method: "DELETE", path: "/v2/account/keys/" + keyIdOrFingerPrint}));
+};
+
+/**
+ * Account related stuff
+ *
+ * @param DropKit
+ * @returns {account}
+ */
+var account = function(DropKit) {
+    this.dropkit = DropKit;
+
+    /**
+     * Key operations
+     *
+     * @type {key}
+     */
+    this.key = new key(this.dropkit);
+
+    return this;
+};
+
+
+
+
+/**
+ * https://developers.digitalocean.com/#create-a-new-key
+ *
+ * @param requestParameter
+ */
+account.prototype.keys = function(request) {
+
+
+    if ( request ) {
+        if ( typeof request === "number" || typeof request === "string" ) {
+            return createPromise(this.dropkit.createOption({method: "GET", path: "/v2/account/keys/" + request}));
+        } else {
+            return createPromise(this.dropkit.createOption({method: "POST", path: "/v2/account/keys"}), JSON.stringify(request));
+        }
+
+    } else {
+        return createPromise(this.dropkit.createOption({ method: "GET" , path: "/v2/account/keys"}));
+    }
+
+};
+
+
+
+
+
 /**
  * Main dropkit obj
  *
@@ -172,7 +289,7 @@ var DropKit = function(token) {
             "Authorization" : 'Bearer ' + token
         }
     };
-    this.createOption = HttpOptionCreator(baseOption);
+    this.createOption = httpOptionCreator(baseOption);
 
     /**
      * https://developers.digitalocean.com/#retrieve-an-existing-domain
@@ -197,13 +314,27 @@ var DropKit = function(token) {
 
 
     /**
-     *
+     * https://developers.digitalocean.com/#images
      *
      * @type {droplet}
      */
     this.droplet = new droplet(this);
 
+    /**
+     * Image
+     *
+     * @type {image}
+     */
+    this.image = new image(this);
 
+    /**
+     * All operations within an account
+     * https://developers.digitalocean.com/#ssh-keys
+     *
+     *
+     * @type {account}
+     */
+    this.account = new account(this);
 };
 
 /**
@@ -223,16 +354,15 @@ DropKit.prototype.accounts = function() {
  * @param actionId
  */
 DropKit.prototype.actions = function(actionId) {
-
+    var path = '/v2/actions';
     if ( actionId ) {
-        if ( typeof actionId === "string" ) { //FIXME we probably should also check for number
-            return createPromise(this.createOption({method: 'GET', path: '/v2/actions/' + actionId}));
+        if ( typeof actionId === "string" || typeof actionId === "number" ) {
+            path += "/" + actionId; //requesting /actions/Id
         } else {
-            return createPromise(this.createOption({method: 'GET', path: '/v2/actions?' + objToHttpGetParam(actionId)}));
+            path += "?" + objToHttpGetParam(actionId);
         }
-    } else {
-        return createPromise(this.createOption({method: 'GET', path: '/v2/actions'}));
     }
+    return createPromise(this.createOption({method: 'GET', path: path}));
 };
 
 /**
@@ -248,11 +378,35 @@ DropKit.prototype.domains = function(domainName) {
 
 };
 
+/**
+ * Images
+ * https://developers.digitalocean.com/#images
+ *
+ *
+ * @param domainName
+ */
+DropKit.prototype.images = function(imageParameter) {
+    var path = "/v2/images";
+    if ( imageParameter ) {
+        if ( typeof imageParameter === "string" || typeof imageParameter === "number") {
+            path += "/" + imageParameter;
+        }  else {
+            //assume its a freaking object
+            if ( imageParameter.type ) {
+                path += "?" + objToHttpGetParam(imageParameter);
+            }
+        }
+    }
+
+    return createPromise(this.createOption({ method: 'GET' , path: path}));
+
+};
 
 /**
  *
  * https://developers.digitalocean.com/#domain-records
  *
+ * TODO: this should probably live inside domain
  *
  * @param domainName
  * @param recordId
@@ -260,12 +414,7 @@ DropKit.prototype.domains = function(domainName) {
 DropKit.prototype.records = function(domainName,recordId) {
     var path = "/v2/domains/" + domainName  + "/records" + ( recordId ? ( "/" + recordId) : "");
     return createPromise(this.createOption({method: 'GET', path: path}));
-
 };
-
-
-
-
 
 
 /**
@@ -275,7 +424,7 @@ DropKit.prototype.records = function(domainName,recordId) {
  */
 DropKit.prototype.droplets = function(id) {
     var path = '/v2/droplets' + (id ? '/' + id : '') ;
-    return createPromise(this.createOption({method: 'GET', path: path}))
+    return createPromise(this.createOption({method: 'GET', path: path}));
 
 };
 
@@ -290,10 +439,34 @@ DropKit.prototype.droplet_upgrades = function() {
 
 };
 
+/**
+ * https://developers.digitalocean.com/#ssh-keys
+ *
+ * @param keyIdOrFingerPrint
+ */
 DropKit.prototype.keys = function(keyIdOrFingerPrint) {
     var path = '/v2/account/keys' + ( keyIdOrFingerPrint ? keyIdOrFingerPrint : '/' + keyIdOrFingerPrint);
     return createPromise(this.dropkit.createOption({ method: 'GET' , path: path}));
 
 };
+
+/**
+ * https://developers.digitalocean.com/#regions
+ *
+ */
+DropKit.prototype.regions = function() {
+    return createPromise(this.dropkit.createOption({ method: 'GET' , path: "/v2/regions"}));
+};
+
+
+/**
+ * https://developers.digitalocean.com/#sizes
+ *
+ */
+DropKit.prototype.sizes = function() {
+    return createPromise(this.dropkit.createOption({ method: 'GET' , path: "/v2/sizes"}));
+};
+
+
 
 module.exports = DropKit;

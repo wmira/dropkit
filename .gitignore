@@ -2,3 +2,4 @@ client.js
 node_modules
 .idea
 *.iml
+npm-debug.log
