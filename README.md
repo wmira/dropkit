@@ -54,7 +54,6 @@ See the DigitalOcean's [V2 Rest API](https://developers.digitalocean.com/#introd
  v2.domain.delete("domain.com"); //delete
 ```
 
-```
 ## Domain Records
 ```javascript
  v2.records(domainName); //list all records for a given domain
