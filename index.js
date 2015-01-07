@@ -15,22 +15,19 @@ var createPromise = function(params,towrite) {
 
     return new pms(function (resolve, reject) {
         var req = https.request(params,function(res) {
+
             res.setEncoding('utf8');
             var buffer = "";
-            //204 is successful delete request,201 is created
-            if ( res.statusCode === 200 || res.statusCode === 204 || res.statusCode === 201 ) {
-                res.on('data', function (chunk) {
-                    buffer += chunk;
-                });
-            } else {
-                reject(new Error("Error: Non OK Status Code: " + res.statusCode));
-            }
+
+            res.on('data', function (chunk) {
+                buffer += chunk;
+            });
+
             res.on('error',function(err) {
                 reject(err);
             });
 
             res.on('end',function() {
-
                 if ( buffer ) {
                     resolve(toJSON(buffer));
                 } else {
@@ -455,7 +452,7 @@ account.prototype.keys = function(keyIdOrFingerPrint) {
  *
  */
 DropKit.prototype.regions = function() {
-    return createPromise(this.createOption({ method: 'GET' , path: "/v2/regions"}));
+    return createPromise(this.createOption({ method: 'GET' , path: "/v2/regionsx"}));
 };
 
 
