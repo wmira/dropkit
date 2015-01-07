@@ -10,7 +10,7 @@ module.exports = {
 
         return function(requestOption) {
             return util._extend(baseOption, requestOption);
-        }
+        };
     },
 
     toJSON : function(buffer) {

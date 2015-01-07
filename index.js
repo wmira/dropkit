@@ -435,7 +435,7 @@ DropKit.prototype.droplets = function(id) {
  */
 DropKit.prototype.droplet_upgrades = function() {
 
-    return createPromise(this.dropkit.createOption({ method: 'GET' , path: '/v2/droplet_upgrades'}));
+    return createPromise(this.createOption({ method: 'GET' , path: '/v2/droplet_upgrades'}));
 
 };
 
@@ -444,8 +444,8 @@ DropKit.prototype.droplet_upgrades = function() {
  *
  * @param keyIdOrFingerPrint
  */
-DropKit.prototype.keys = function(keyIdOrFingerPrint) {
-    var path = '/v2/account/keys' + ( keyIdOrFingerPrint ? keyIdOrFingerPrint : '/' + keyIdOrFingerPrint);
+account.prototype.keys = function(keyIdOrFingerPrint) {
+    var path = '/v2/account/keys' + ( keyIdOrFingerPrint ? ('/' + keyIdOrFingerPrint) : '');
     return createPromise(this.dropkit.createOption({ method: 'GET' , path: path}));
 
 };
@@ -455,7 +455,7 @@ DropKit.prototype.keys = function(keyIdOrFingerPrint) {
  *
  */
 DropKit.prototype.regions = function() {
-    return createPromise(this.dropkit.createOption({ method: 'GET' , path: "/v2/regions"}));
+    return createPromise(this.createOption({ method: 'GET' , path: "/v2/regions"}));
 };
 
 
@@ -464,7 +464,7 @@ DropKit.prototype.regions = function() {
  *
  */
 DropKit.prototype.sizes = function() {
-    return createPromise(this.dropkit.createOption({ method: 'GET' , path: "/v2/sizes"}));
+    return createPromise(this.createOption({ method: 'GET' , path: "/v2/sizes"}));
 };
 
 
