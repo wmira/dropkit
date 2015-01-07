@@ -1,6 +1,6 @@
 {
   "name": "dropkit",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A DigitalOcean Node.js module",
   "main": "index.js",
   "scripts": {
