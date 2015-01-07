@@ -19,7 +19,8 @@ DropKit uses [BlueBird](https://github.com/petkaantonov/bluebird) and returns pr
  v2.accounts().then(function(account) {
     console.log(account);
  }).error(function(error) {
-    console.log("something bad happened");
+    console.log("httpStatusCode: " + error.statusCode);
+    console.log("response: " + error.res);
  });
 ```
 
