@@ -28,11 +28,21 @@ var createPromise = function(params,towrite) {
             });
 
             res.on('end',function() {
-                if ( buffer ) {
-                    resolve(toJSON(buffer));
+
+                if ( res.statusCode === 200 || res.statusCode === 204 || res.statusCode === 201 ) {
+                    if ( buffer ) {
+                        resolve(toJSON(buffer));
+                    } else {
+                        resolve();
+                    }
                 } else {
-                    resolve();
+                    if ( buffer ) {
+                        reject({statusCode: res.statusCode, res:toJSON(buffer)});
+                    } else {
+                        reject({statusCode: res.statusCode});
+                    }
                 }
+
             });
         });
 
@@ -452,7 +462,7 @@ account.prototype.keys = function(keyIdOrFingerPrint) {
  *
  */
 DropKit.prototype.regions = function() {
-    return createPromise(this.createOption({ method: 'GET' , path: "/v2/regionsx"}));
+    return createPromise(this.createOption({ method: 'GET' , path: "/v2/regions"}));
 };
 
 
