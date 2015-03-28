@@ -446,16 +446,6 @@ DropKit.prototype.droplet_upgrades = function() {
 
 };
 
-/**
- * https://developers.digitalocean.com/#ssh-keys
- *
- * @param keyIdOrFingerPrint
- */
-account.prototype.keys = function(keyIdOrFingerPrint) {
-    var path = '/v2/account/keys' + ( keyIdOrFingerPrint ? ('/' + keyIdOrFingerPrint) : '');
-    return createPromise(this.dropkit.createOption({ method: 'GET' , path: path}));
-
-};
 
 /**
  * https://developers.digitalocean.com/#regions
