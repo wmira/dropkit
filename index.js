@@ -258,7 +258,7 @@ var account = function(DropKit) {
 /**
  * https://developers.digitalocean.com/#create-a-new-key
  *
- * @param requestParameter
+ * @param request
  */
 account.prototype.keys = function(request) {
 

@@ -36,6 +36,8 @@ See the DigitalOcean's [V2 Rest API](https://developers.digitalocean.com/#introd
  v2.account.keys(); //return all keys
  v2.account.keys(keyIdOrFingerPrint); //retrieve key info
  v2.account.keys({name: 'keyname',public_key: "ssh-rsa ..."}); //create a new key
+ v2.account.key.update(keyIdOrFingerPrint,newname);
+ v2.account.key.destroy(keyIdOrFingerPrint);
 
 
 ```
