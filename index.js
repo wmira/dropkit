@@ -157,7 +157,7 @@ droplet.prototype.delete = function(dropletId) {
  * @param action
  */
 droplet.prototype.action = function(dropletId,action) {
-    return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/droplets/' + dropletId}),JSON.stringify({type: action}));
+    return createPromise(this.dropkit.createOption({ method: 'POST' , path: '/v2/droplets/' + dropletId + '/actions'}),JSON.stringify({type: action}));
 };
 
 
